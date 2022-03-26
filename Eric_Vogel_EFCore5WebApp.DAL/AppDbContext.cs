@@ -21,34 +21,58 @@ namespace Eric_Vogel_EFCore5WebApp.DAL
 
         //var context = new AppDbContext(new DbContextOptionsBuilder<AppDbContext>().UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=DemoDb;Trusted_Connection= True; MultipleActiveResultSets=true").Options);
         //the above line could be used in any class that needs to use the Db via the dbcontext. Since in MVC apps, StartUp.cs already defines it in ConfigureServices...
-        //... methods in MVC apps generally only need new AppDbContext() without a lengthy parameter
+        //... , methods in MVC apps generally only need new AppDbContext() constructor without a lengthy parameter
 
-        //This method can be used to
+        //The OnModelCreating() method is called when DbContext is created.
+        //This method can be used to:
         //1. Configure the database schema (instead of decorating the entities directly)
         //2. Seeding via modelBuilder.Entity<T>.HasData()
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             #region configuring schema
+
+            #region default schema
+            //----modelBuilder.HasDefaultSchema("Custom");
+            #endregion
+
+            #region default values
             //to hardcode default values (manual or db generated) when a record is inserted, you can use HasDefaultValue or HasDefaultValueSql
             //----modelBuilder.Entity<Person>().Property(p => p.CreatedOn).HasDefaultValueSql("getdate()");
             //----modelBuilder.Entity<Address>().Property(a => a.Country).HasDefaultValue("USA");
+            #endregion
+
+            #region primary key constraint
+            //----modelBuilder.Entity<LookUp>().HasKey(c => c.Code);
+            #endregion
+
+            #region composite key constraint
+            //----modelBuilder.Entity<Person>().HasKey(c => new { c.FirstName, c.LastName });
+            #endregion
+
+            #region map entity to class
+            //to map entities to specific tables in the DB
+            //----modelBuilder.Entity<Shape>().ToTable("Shape");
+            //----modelBuilder.Entity<Cube>().ToTable("Cube");
+            #endregion
 
             #region delete behavior
-            //////////Define delete action (cascade(default), restrict, client side null, set null)
+            //Define delete action (cascade(default), restrict, client side null, set null)
 
             //(cascade) this is the default type of deletion. However, it can also be explicity defined here (in OnModelCreating())
-            //modelBuilder.Entity<Person>(entity => { entity.HasMany(x => x.Addresses).WithOne(x => x.Person).OnDelete(DeleteBehavior.Cascade); });
+            //----modelBuilder.Entity<Person>(entity => { entity.HasMany(x => x.Addresses).WithOne(x => x.Person).OnDelete(DeleteBehavior.Cascade); });
 
             //(restrict) this does not allow a parent to be deleted as long as it has children
-            //modelBuilder.Entity<Person>(entity => { entity.HasMany(x => x.Addresses).WithOne(x => x.Person).HasForeignKey(x => x.PersonId).OnDelete(DeleteBehavior.Restrict); });
+            //----modelBuilder.Entity<Person>(entity => { entity.HasMany(x => x.Addresses).WithOne(x => x.Person).HasForeignKey(x => x.PersonId).OnDelete(DeleteBehavior.Restrict); });
 
             //(client set null) foreign key (of the child table) is set to null (perhaps manually...not sure) instead of deleting the entire row. The foreign key should be made NULLABLE (like int?)
-            //modelBuilder.Entity<Person>(entity => { entity.HasMany(x => x.Addresses).WithOne(x => x.Person).HasForeignKey(x => x.PersonId).OnDelete(DeleteBehavior.ClientSetNull); });
+            //----modelBuilder.Entity<Person>(entity => { entity.HasMany(x => x.Addresses).WithOne(x => x.Person).HasForeignKey(x => x.PersonId).OnDelete(DeleteBehavior.ClientSetNull); });
 
             //(set null) same as client set null except that the foreign key is automatically set to null when parent record is deleted.
-            //modelBuilder.Entity<Person>(entity => { entity.HasMany(x => x.Addresses).WithOne(x => x.Person).HasForeignKey(x => x.PersonId).OnDelete(DeleteBehavior.SetNull); });
+            //----modelBuilder.Entity<Person>(entity => { entity.HasMany(x => x.Addresses).WithOne(x => x.Person).HasForeignKey(x => x.PersonId).OnDelete(DeleteBehavior.SetNull); });
 
             #endregion
+
             #endregion
 
             #region seeding
@@ -122,9 +146,6 @@ namespace Eric_Vogel_EFCore5WebApp.DAL
 
             //do a migration after this to add the record to the DB. (Add-Migration XYZ, Update-Database)
             #endregion
-
-
-
         }
     }
 }
